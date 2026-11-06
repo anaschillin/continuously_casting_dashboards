@@ -9,7 +9,8 @@
     "version": "3.0.1",
     "config_flow": true,
     "dependencies": [
-        "http"
+        "http",
+        "frontend"
     ],
     "codeowners": [
         "@b0mbays"
