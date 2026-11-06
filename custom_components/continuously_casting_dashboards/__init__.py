@@ -1008,7 +1008,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                 
                 # 🚀 START BACKGROUND DEVICE INITIALIZATION - doesn't block integration loading
                 _LOGGER.info("Integration loaded successfully, starting device initialization in background...")
-                hass.async_create_task(caster.start_background_initialization())
+                startup_task = hass.async_create_task(
+                    caster.start_background_initialization()
+                )
+                caster._background_tasks.append(startup_task)
                 
                 _LOGGER.info("Entry %s setup completed successfully", entry.entry_id)
                 return True
@@ -1097,7 +1100,10 @@ async def async_reload_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
             _LOGGER.debug(f"Options after reload: {entry.options}")
             
             # Start background initialization after reload
-            hass.async_create_task(new_instance.start_background_initialization())
+            startup_task = hass.async_create_task(
+                new_instance.start_background_initialization()
+            )
+            new_instance._background_tasks.append(startup_task)
             
         except asyncio.TimeoutError:
             _LOGGER.error(f"Reload timed out for entry {entry.entry_id}")
