@@ -47,6 +47,8 @@ A Home Assistant integration that automatically casts dashboards to your Chromec
 - **Per-device reconnect backoff** - Limits repeated reconnect failures without permanently disabling recovery
 - **Diagnostics** - Exposes discovery metadata, retry delay, and failure reason through HA diagnostics and status sensors
 - **Optional frontend readiness** - Companion Lovelace card reports whether required custom elements registered, with safe diagnostic-only heartbeat monitoring
+- **Cast control panel and timed pause** - Optional Lovelace controls for status, manual pauses, resume and temporary dashboard selection
+- **Actionable Repairs** - Detect missing CATT command and ambiguous name-only device configurations
 
 ## 📋 Requirements
 
@@ -212,9 +214,78 @@ data:
 
 Clear it early with `continuously_casting_dashboards.clear_dashboard_override` and `device_name`. If multiple configured devices have the exact same name across integration entries, selection is refused to avoid affecting the wrong Cast device. Entity-triggered switches are debounced to reduce redundant scans.
 
-### Native Home Assistant control card
+### Cast control panel (optional)
 
-Device status is already exposed as Home Assistant sensors. You can use a standard Entities card with the device's status sensor and two buttons wired to `stop_casting` / `resume_casting`. No new custom frontend dependency is needed. See the registered services under **Developer Tools → Actions**.
+A bundled `custom:ccd-control-panel` Lovelace card shows each configured Cast
+device's current status, dashboard path, retry state, readiness and recent errors.
+It offers **Resume/check**, **Pause**, **Timed pause**, **Stop once**, and
+optional temporary dashboard selection.
+
+Register `/ccd_cast/ccd-control-panel.js` under
+**Settings → Dashboards → Resources** as a **JavaScript module**. Then add:
+
+```yaml
+type: custom:ccd-control-panel
+title: Cast displays
+devices:
+  - name: Kitchen Hub
+    entity: sensor.kitchen_hub_status
+    dashboards:
+      - Main
+      - Salah
+  - name: Living Room Display
+    entity: sensor.living_room_display_status
+```
+
+Use the exact device name configured in CCD and the **actual** corresponding
+sensor entity ID from **Developer Tools → States**. Dashboard labels must be
+listed in the same order as the integration's dashboard configuration.
+These are labels, not URLs, and the control panel does not discover them
+automatically. If a name is present in multiple config entries, the manual
+override and pause services reject the ambiguous device name.
+
+- **Pause** suppresses dashboard selection until resumed or HA restarts.
+  **Timed pause** resumes normal rules at the chosen expiration.
+- **Resume/check** removes a pause and requests another monitoring cycle.
+  It does not bypass time windows, entity conditions, or active user media.
+- **Stop once** sends one stop command, but normal monitoring may recast.
+  Use Pause to suspend automatic casting.
+- **Show temporarily** requests the specified dashboard for up to one hour,
+  provided its time/entity conditions permit it. It never overrides media protection.
+
+You can also use these Home Assistant actions directly:
+`continuously_casting_dashboards.pause_casting`,
+`continuously_casting_dashboards.resume_casting`,
+`continuously_casting_dashboards.select_dashboard` and
+`continuously_casting_dashboards.clear_dashboard_override`.
+
+Example timed pause:
+
+```yaml
+action: continuously_casting_dashboards.pause_casting
+data:
+  device_name: Kitchen Hub
+  duration_seconds: 900
+```
+
+Pause state is intentionally **in-memory only** and resets after HA restarts.
+Sensor data updates after completed monitoring passes.
+
+### Actionable configuration Repairs
+
+The integration creates a Home Assistant **Settings → System → Repairs** issue
+if its CATT command cannot be found, or if multiple configured devices rely
+on the same name for discovery without explicit IPs. Fix the installation or
+device identity to clear the issue at the next setup/reload. Ordinary temporary
+Cast outages remain diagnostic status changes, not persistent Repairs.
+
+### CATT upgrade and HA Cast alternatives
+
+The manifest remains pinned to CATT **0.12.13**. CATT **0.13.3** is available,
+but the version change needs dedicated physical Chromecast and dependency
+testing: later CATT releases modified discovery and DashCast behaviour.
+See [the backend compatibility review](docs/CAST_BACKENDS.md) for the testing
+matrix and the proposed experimental HA Cast adapter design.
 
 ### Device discovery, retries, and diagnostics
 
