@@ -53,10 +53,6 @@ This roadmap tracks work in [Continuously Casting Dashboards](https://github.com
 - [ ] Explore bounded, safe troubleshooting/recovery for missing resources without interrupting media. **Automatic recasting from a missing heartbeat is deliberately not implemented.**
 - [ ] Validate receiver-specific behaviour on multiple Cast devices, frontend reloads, kiosk layouts and supported Home Assistant versions.
 
-## Current follow-up development — PR #6 (not merged)
-
-[Draft PR #6](https://github.com/anaschillin/continuously_casting_dashboards/pull/6) implements an optional Lovelace multi-device control panel, reversible per-device pause/resume, configuration Repairs for missing CATT and ambiguous names, and a fix for notification-setting persistence. It also documents a CATT/HA Cast compatibility review. These changes are **not yet in `main`**; the corresponding roadmap items remain unchecked until this PR is merged and checked.
-
 ## Continuous quality and release work
 
 - [x] CI includes Python compilation, translation JSON checks, JavaScript syntax checks, Ruff checks on added modules and regression tests (the merged PR #5 branch passed 51 tests).

@@ -298,6 +298,11 @@ but the version change needs dedicated physical Chromecast and dependency
 testing: later CATT releases modified discovery and DashCast behaviour.
 See [the backend compatibility review](docs/CAST_BACKENDS.md) for the testing
 matrix and the proposed experimental HA Cast adapter design.
+### Home Assistant dashboard controls
+
+Device status is exposed through Home Assistant sensors. You can create an ordinary Entities dashboard with status sensors and buttons calling `stop_casting`, `resume_casting`, `select_dashboard`, and `clear_dashboard_override`. These actions are available under **Developer Tools → Actions**.
+
+A dedicated Lovelace multi-device control panel and lasting pause/resume controls are **not included in merged PRs #2–#5**; those enhancements are being developed separately. The existing `stop_casting` action stops an active dashboard once and is **not** an indefinite pause—monitoring may cast it again when normal conditions qualify.
 
 ### Device discovery, retries, and diagnostics
 
@@ -440,6 +445,7 @@ data:
 - `stop_casting` — one-off stop on a device or all devices, **not** a persistent pause
 - `pause_casting` — pause an individual device for 0 seconds (until resumed/restart) or 5–86,400 seconds
 - `resume_casting` — clear pauses and request a cast eligibility check on a device or all devices
+- `resume_casting` — trigger a cast check on a device or all devices
 - `select_dashboard` — temporarily prefer a dashboard by zero-based index, 5–3600 seconds
 - `clear_dashboard_override` — return a named device to automatic priority/rotation selection
 - `report_dashboard_ready` — internal diagnostic action used by the optional frontend reporter
@@ -567,8 +573,7 @@ DEBUG Status output for Office display: Title: Dummy 22:27:13 GMT+0000
 ### Device shows as unreachable
 
 If a device temporarily loses connectivity, the integration can report it as disconnected, back off repeated failed reconnections, and create a persistent notification when enabled. Casting will be attempted again when the retry delay and normal eligibility/media checks allow it.
-
-If you find notifications noisy, use the **Enable notifications** option under **Settings → Devices & Services → Continuously Casting Dashboards → Configure**. This feature PR includes a persistence fix for `false`; verify your saved setting after upgrading and reloading the integration.
+If you find the notifications noisy, the **Enable notifications** option is available under **Settings → Devices & Services → Continuously Casting Dashboards → Configure**. **Known limitation in merged PRs #2–#5:** the global options flow does not reliably persist an unchecked value; the fix is being developed separately. Confirm its saved value after reloading, rather than assuming the toggle has taken effect.
 
 ### Annoying phone notifications for "DashCast"
 
