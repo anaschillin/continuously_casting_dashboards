@@ -91,7 +91,12 @@
 
     complete = true;
     console.warn("[CCD] Persistent custom-card error: trying one guarded dashboard reload");
-    window.location.reload();
+    // Mark the query flag as consumed *before* navigating. If the Cast
+    // receiver drops sessionStorage during navigation, the new page still
+    // cannot trigger another reload from this recovery attempt.
+    const next = new URL(window.location.href);
+    next.searchParams.set(PARAMETER, "done");
+    window.location.replace(next.toString());
   }
 
   // Never hook customElements.define(), monkeypatch Home Assistant internals,
