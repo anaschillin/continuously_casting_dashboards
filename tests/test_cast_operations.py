@@ -154,6 +154,7 @@ class GlobalSettingsTests(unittest.TestCase):
             "config_flow.py", "GlobalSettingsOptionsFlow", "async_step_init",
             {
                 "Any": Any,
+                "ConfigFlowResult": dict,
                 "_normalise_time_selector": lambda value: (
                     value.strftime("%H:%M:%S")
                     if isinstance(value, dt_time) else value
