@@ -71,6 +71,9 @@ This roadmap tracks work in [Continuously Casting Dashboards](https://github.com
 - [x] Add protection against repeated reloads through a consumed URL flag
   and session storage, plus regression tests for nested shadow roots,
   transient errors, disabled mode and blocked browser storage.
+- [x] Implement privacy-safe Cast browser reporting to HA diagnostics for
+  module startup, Lovelace error cards, resource-load counters and
+  registered custom-card counts; `no_report` remains inconclusive.
 - [ ] Test the guard on real Nest Hub / Chromecast browsers, including
   panel views, multiple third-party HACS custom cards, normal media
   interruptions, authentication and a deliberately broken card.
