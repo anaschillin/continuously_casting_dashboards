@@ -352,10 +352,50 @@ JavaScript or missing resources. Some Cast browsers may not load the guard
 script; real receiver validation is therefore required. An error appearing
 after the final observation (roughly 36 seconds) will not automatically retry.
 
+**Receiver-side diagnostics (included with this option):** A Cast-only URL
+also receives an opaque `ccd_cast_target` correlation key (a short one-way
+hash of the Cast IP; never the IP itself). The guard attempts to send
+authenticated browser observations to Home Assistant, using the existing
+frontend's `hass.callService`, when the receiver allows it. No additional
+Lovelace resource or third-party custom-card changes are required.
+
+To troubleshoot, cast the affected dashboard with **Recover custom-card
+configuration errors on Cast** enabled, then open **Settings → Devices &
+Services → Continuously Casting Dashboards → Download diagnostics**. Find the
+affected device's `cast_frontend` status (also shown in the device status
+sensor's `cast_frontend` attribute after a status refresh):
+
+| Status | Meaning |
+| --- | --- |
+| `disabled` | Recovery/telemetry isn't enabled on the current dashboard |
+| `awaiting_report` | Cast started; first browser report hasn't arrived |
+| `no_report` | No report after 90 seconds: guard may not load, receiver may not expose an authenticated `hass`, or reporting may be blocked |
+| `observed` | The guard ran and sent a report without detecting error cards |
+| `error_cards` | One or more `hui-error-card` elements still exist in the receiver's page |
+| `script_or_resource_errors` | Browser counted script/link resource-load or JavaScript errors |
+| `reload_requested` | Guard attempted its single controlled reload |
+| `stale` | The last browser report is older than three minutes |
+
+Each report contains **only integer counts**, document readiness and stage:
+`error_cards`, `resource_errors`, `javascript_errors`,
+`script_resources`, `listed_custom_cards` and
+`registered_custom_cards`. It excludes raw error text, resource URLs,
+authentication tokens and dashboard query parameters. Observed
+`registered_custom_cards` describes the registry **when sampled**; it
+cannot prove that cards were registered before Lovelace constructed them.
+
+The `no_report` state is intentionally **inconclusive**, not proof that the
+guard failed to load: receivers can prevent frontend API calls, a stale
+connection can block service reporting, or the resource may not execute.
+The browser checks start after script initialisation and cannot reliably
+capture network failures that occurred before it ran. Reports also cannot
+guarantee that a specific physical Cast receiver, rather than another
+browser opening the exact guarded URL, supplied them.
+
 **This is independent of the optional readiness reporter below.** The
-readiness reporter remains diagnostic-only, while this recovery mode uses
-the presence of Lovelace error cards; no third-party-specific element names
-need to be configured.
+readiness reporter remains diagnostic-only. Browser diagnostics and guarded
+reloading are separate from any CATT reconnect action, and media protection
+remains unchanged.
 
 ### Optional dashboard frontend readiness (experimental)
 
