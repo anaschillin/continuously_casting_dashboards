@@ -64,6 +64,16 @@ class FrontendDiagnosticsTracker:
             "metrics": {key: 0 for key in _FIELDS},
         }
 
+    def can_accept(self, target: str, dashboard_path: str) -> bool:
+        """Whether exactly one active cast matches this reporter identity."""
+        if not isinstance(target, str) or not isinstance(dashboard_path, str):
+            return False
+        path = urlsplit(dashboard_path).path or "/"
+        return sum(
+            session["token"] == target and session["path"] == path
+            for session in self._sessions.values()
+        ) == 1
+
     def report(
         self,
         target: str,
