@@ -61,7 +61,7 @@ This roadmap tracks work in [Continuously Casting Dashboards](https://github.com
 - [ ] Investigate alternative Cast backends with an opt-in adapter; [backend assessment](docs/CAST_BACKENDS.md) is design/evaluation, not a released backend.
 - [ ] Verify receiver-specific, authenticated frontend readiness rather than accepting a heartbeat that could come from another browser.
 - [ ] Design any automatic recovery from a missing frontend heartbeat to avoid unnecessary recasts or interrupting user media.
-- [ ] Publish and validate a `v3.0.0` release/tag after final hardware verification; changing version metadata alone does not publish one.
+- [ ] Publish and validate a tagged 3.0.x release after hardware checks; changing version metadata alone does not publish one.
 
 ## Continuous quality and release work
 
