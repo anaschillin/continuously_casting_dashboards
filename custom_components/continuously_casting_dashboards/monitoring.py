@@ -1265,6 +1265,11 @@ class MonitoringManager:
 
             await asyncio.gather(*[_bounded_process(name) for name in self.devices])
 
+            # Keep the dashboard-control sensors current after each monitoring
+            # pass, including changes caused by manual pause/resume actions.
+            if self.stats_manager is not None:
+                await self.stats_manager.async_generate_status_data()
+
     async def async_stop_casting(self, ip):
         """Send a catt stop command to a device.
 
