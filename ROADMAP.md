@@ -45,7 +45,7 @@ This roadmap tracks planned improvements for [Continuously Casting Dashboards](h
 **Merged:** [PR #5](https://github.com/anaschillin/continuously_casting_dashboards/pull/5) provides opt-in heartbeat reporting, custom-element registration status and diagnostics. It **does not** infer that a specific Cast receiver rendered correctly, and never automatically recasts based on missing reports.
 
 - [x] Prototype an **optional** frontend heartbeat for dashboard readiness and custom-card registration; Python cannot directly inspect rendered browser content.
-- [x] Distinguish an accepted cast from successfully rendered dashboard content.
+- [x] Track custom-element registration separately from a successful Cast command (not proof of completed page rendering).
 - [ ] Add bounded retries and actionable troubleshooting when a dashboard or JavaScript card fails to initialize.
 - [ ] Test multiple devices, frontend reloads, kiosk mode, and Home Assistant version upgrades.
 
