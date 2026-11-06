@@ -80,8 +80,17 @@ This roadmap tracks work in [Continuously Casting Dashboards](https://github.com
 - [ ] Continue tracking upstream Home Assistant frontend resource/registry
   loading races; the guard is a mitigation, **not** a frontend core fix.
 
-**Status:** code above is on a feature branch, not part of the merged
-v3.0.1 release until its PR passes review and is merged.
+**Status:** generic Cast recovery is merged (v3.0.2). The new receiver-side
+diagnostics remain in PR #12 pending review and real-device testing.
+
+## Startup reliability — 3.0.3 merged
+
+- [x] Remove the false 45-second blanket timeout from background initialisation.
+- [x] Apply startup Cast delay only between attempts and track initialization
+  tasks for clean unload/reload.
+- [ ] Confirm the revised startup sequence on HAOS and real Cast devices.
+- [ ] Diagnose custom-card `Configuration error` separately from startup
+  warnings using receiver-side diagnostics.
 
 ## Continuous quality and release work
 
