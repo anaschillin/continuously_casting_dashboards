@@ -291,6 +291,7 @@ class VolumeTests(unittest.TestCase):
                 "DEFAULT_CASTING_TIMEOUT": 3,
                 "TIMEOUT_VOLUME_COMMAND": 3,
                 "TIMEOUT_PROCESS_TERMINATE": 3,
+                "prepare_cast_url": lambda url, enabled=False: url,
             },
         )
         obj = harness()
