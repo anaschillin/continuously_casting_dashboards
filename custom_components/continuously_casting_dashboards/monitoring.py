@@ -470,6 +470,9 @@ class MonitoringManager:
                 self.readiness_tracker.cast_started(
                     device_name, "", enabled=False
                 )
+                self.frontend_diagnostics.cast_started(
+                    device_name, ip, "", enabled=False
+                )
                 if is_casting:
                     _LOGGER.info("No eligible dashboard for %s; stopping cast", device_name)
                     await self.async_stop_casting(ip)
@@ -1157,6 +1160,10 @@ class MonitoringManager:
                 device_name, dashboard_url,
                 enabled=bool(device_config.get("verify_readiness", False)),
             )
+            self.frontend_diagnostics.cast_started(
+                device_name, ip, dashboard_url,
+                enabled=bool(device_config.get("recover_custom_cards", False)),
+            )
             _LOGGER.info("Successfully connected to %s (%s)", device_name, ip)
             self.device_manager.update_active_device(
                 device_key=device_key,
@@ -1467,6 +1474,10 @@ class MonitoringManager:
             self.readiness_tracker.cast_started(
                 device_name, dashboard_url,
                 enabled=bool(device_config.get("verify_readiness", False)),
+            )
+            self.frontend_diagnostics.cast_started(
+                device_name, ip, dashboard_url,
+                enabled=bool(device_config.get("recover_custom_cards", False)),
             )
             self.reconnect_backoff.record_success(device_key)
             self.device_manager.update_active_device(
