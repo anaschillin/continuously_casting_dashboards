@@ -46,6 +46,20 @@ This upgrade changes the Python dependency from `catt==0.12.13` to `catt==0.13.3
 
 See [the CATT compatibility matrix](CAST_BACKENDS.md) for the full device test plan and [the changelog](../CHANGELOG.md) for the 3.0.1 summary.
 
+## Background initialisation warning in 3.0.2 and earlier
+
+The warning `Background device initialization timed out, continuing anyway`
+comes from a fixed 45-second deadline around the initial device setup. It can
+fire even with one working display because initial setup previously waited the
+full default 60-second inter-device delay after its last device.
+
+Version **3.0.3** removes the blanket startup deadline, avoids a trailing
+delay and tracks startup tasks for clean unload. Individual CATT operations
+still have their normal timeouts. This startup warning is **not** evidence
+of a custom-card JavaScript failure. If casting succeeds but the screen
+shows `Configuration error`, use the receiver diagnostics below to
+troubleshoot Lovelace loading separately.
+
 ## Diagnosing custom-card errors on Cast receivers
 
 Enable **Recover custom-card configuration errors on Cast** for the affected
