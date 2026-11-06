@@ -13,6 +13,12 @@ All changes here refer to the [anaschillin fork](https://github.com/anaschillin/
 - Prevent reload loops with a consumed URL marker, per-dashboard
   15-minute session cooldown, and fail-closed behaviour without storage.
 - Add Python URL-parameter tests and JavaScript simulated-DOM recovery tests.
+- Add optional authenticated receiver-side diagnostic heartbeats and bounded,
+  privacy-safe counts for persistent error cards, script/link load errors,
+  JavaScript errors, custom-card registration and reload phases.
+- Expose `cast_frontend` via device status sensor attributes and downloadable
+  Home Assistant integration diagnostics, including inconclusive
+  `no_report` when receiver telemetry never reaches Home Assistant.
 
 **Default:** disabled. This mitigates some Home Assistant custom-resource
 startup races but cannot fix invalid Lovelace YAML, unavailable modules, or
