@@ -2,6 +2,17 @@
 
 All changes here refer to the [anaschillin fork](https://github.com/anaschillin/continuously_casting_dashboards). Home Assistant integration and HACS metadata are maintained together; a merged commit or version field does **not** automatically create a tagged GitHub release or HACS download.
 
+## 3.0.3 — Background startup initialization fix (merged 6 November 2026)
+
+- Remove the 45-second blanket initialization timeout, which could cancel
+  successful startup when the inter-device delay was 60 seconds.
+- Apply `cast_delay` only between actual initial casting attempts.
+- Track background startup tasks and cancel them cleanly on reload/unload.
+- Add startup sequence and task lifecycle regression tests.
+
+The backend initialization warning is **not** proof of a Lovelace
+configuration error, which requires separate frontend diagnostics.
+
 ## 3.0.2 — Generic custom-card recovery on Cast (candidate, 6 November 2026)
 
 - Add opt-in `recover_custom_cards` for any dashboard, independent of
