@@ -34,7 +34,7 @@ class CattCompatibilityTests(TestCase):
         for command in sorted(commands):
             with self.subTest(command=command):
                 args = ["-d", "192.0.2.1", command, "--help"]
-                result = runner.invoke(cli, args)
+                result = runner.invoke(cli, args, obj={"options": {}, "aliases": {}})
                 self.assertEqual(result.exit_code, 0, msg=result.output)
 
     def test_scan_output_preserves_device_name_suffix_format(self):
@@ -47,7 +47,7 @@ class CattCompatibilityTests(TestCase):
             model_name="Google Nest Hub",
         )
         with patch.object(catt_cli, "get_cast_infos", return_value=[sample]):
-            result = runner.invoke(catt_cli.cli, ["scan"])
+            result = runner.invoke(catt_cli.cli, ["scan"], obj={"options": {}, "aliases": {}})
         self.assertEqual(result.exit_code, 0, result.output)
         self.assertIn(
             "192.0.2.10 - Kitchen - Google Inc. Google Nest Hub",
