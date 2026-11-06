@@ -22,7 +22,11 @@
 
 ---
 
-A Home Assistant integration that automatically casts dashboards to your Chromecast devices and keeps them running. If a dashboard gets interrupted (someone asks Google a question, plays music, etc.), it automatically resumes once the device is idle.
+A Home Assistant integration that casts dashboards to Chromecast-compatible displays and monitors them for recovery. It respects eligible time windows, entity states, active media and Assistant activity before attempting to resume a dashboard.
+
+**Repository status (6 November 2026):** PRs [#2](https://github.com/anaschillin/continuously_casting_dashboards/pull/2), [#3](https://github.com/anaschillin/continuously_casting_dashboards/pull/3), [#4](https://github.com/anaschillin/continuously_casting_dashboards/pull/4), and [#5](https://github.com/anaschillin/continuously_casting_dashboards/pull/5) have been merged into `main`. The integration manifest currently declares version `2.1.0`; merging does **not** by itself publish a new HACS release. Optional frontend readiness is diagnostic-only, not an automatic fix for JavaScript card loading.
+
+See [ROADMAP.md](ROADMAP.md) for implemented and unfinished work, and [the upgrade guide](docs/update_help.md) before switching from another installation source.
 
 <p align="center">
   <img src="https://github.com/b0mbays/continuously_casting_dashboards/assets/55556007/9cc32333-312e-41cf-bca0-e531e535a268" width="75%" alt="Dashboard on Nest Hub">
@@ -47,8 +51,10 @@ A Home Assistant integration that automatically casts dashboards to your Chromec
 - **Per-device reconnect backoff** - Limits repeated reconnect failures without permanently disabling recovery
 - **Diagnostics** - Exposes discovery metadata, retry delay, and failure reason through HA diagnostics and status sensors
 - **Optional frontend readiness** - Companion Lovelace card reports whether required custom elements registered, with safe diagnostic-only heartbeat monitoring
-- **Cast control panel and timed pause** - Optional Lovelace controls for status, manual pauses, resume and temporary dashboard selection
-- **Actionable Repairs** - Detect missing CATT command and ambiguous name-only device configurations
+- **Optional control panel and timed pause (PR #6)** - Lovelace device status, dashboard selection, timed/indefinite pause, resume and one-off stop
+- **Actionable configuration Repairs (PR #6)** - Identify missing CATT CLI and ambiguous name-only Cast configurations
+- **Dashboard priorities and rotation** - Higher-priority eligible views take precedence; optionally rotate equally ranked views
+- **Manual overrides** - Select a configured dashboard temporarily and clear the override through HA actions
 
 ## 📋 Requirements
 
@@ -56,20 +62,25 @@ Before installing, ensure you have:
 
 | Requirement | Description |
 |-------------|-------------|
-| **HTTPS Access** | Home Assistant must be accessible via HTTPS. Use [Nabu Casa](https://www.nabucasa.com/) or [set up SSL yourself](https://www.makeuseof.com/secure-home-assistant-installation-free-ssl-certificate/) |
-| **Trusted Networks** | Chromecast devices must be able to access HA without login ([setup guide](#trusted-networks-setup)) |
-| **ha-catt-fix** | Prevents display timeout after 10 minutes ([install via HACS](#install-ha-catt-fix)) |
-| **Kiosk Mode** | *Optional* - Hides navigation bars for fullscreen display ([install via HACS](https://github.com/NemesisRE/kiosk-mode)) |
+| **Reachable dashboard URL** | The Cast device must be able to load the configured Home Assistant dashboard. The integration accepts `http://` and `https://` URLs; use HTTPS when practical. |
+| **Dashboard authentication** | The receiver must be able to access the dashboard. If trusted networks are necessary, restrict them to specific Cast device IPs ([setup guidance](#trusted-networks-setup)). |
+| **CATT** | The integration requires the CATT command (currently pinned in the manifest as `catt==0.12.13`). |
+| **ha-catt-fix** | Recommended for affected devices if the display times out; see [installation guidance](#install-ha-catt-fix). |
+| **Kiosk Mode** | *Optional*—hides Home Assistant navigation bars ([project](https://github.com/NemesisRE/kiosk-mode)). |
 
 ## 📦 Installation
 
 ### Via HACS (Recommended)
 
 1. Open HACS in Home Assistant
-2. Click the three dots (⋮) → **Custom repositories**
-3. Add `b0mbays/continuously_casting_dashboards` as an **Integration**
-4. Search for "Continuously Casting Dashboards" and click **Download**
-5. Restart Home Assistant
+2. Open the three-dot menu (⋮) and select **Custom repositories**.
+3. Add `https://github.com/anaschillin/continuously_casting_dashboards` as an **Integration**.
+4. Locate **Continuously Casting Dashboards**, then download/update it.
+5. Restart Home Assistant.
+
+This is the **fork containing PRs #2–#5**. The original [b0mbays repository](https://github.com/b0mbays/continuously_casting_dashboards) is a separate code source. Do not configure both repositories to install the same `continuously_casting_dashboards` integration simultaneously. If migrating from the upstream version, review [the upgrade guide](docs/update_help.md) and back up your configuration first.
+
+Being available as a HACS **custom repository** does not mean that this fork has been accepted into the default HACS catalogue.
 
 ### Manual Installation
 
@@ -94,7 +105,7 @@ The wizard will guide you through:
 2. **Add device** - Enter your Chromecast display name (from Google Home app), its IP address, or both. At least one is required. You can also set an optional alias as a display name.
 3. **Dashboard URL** - The full URL to your dashboard (e.g., `http://192.168.1.100:8123/lovelace/dashboard?kiosk`)
 
-> **Tip:** Use your Home Assistant's local IP address in the dashboard URL, not `homeassistant.local`
+> **Tip:** Use a reachable IP address or DNS hostname; local mDNS names such as `homeassistant.local` may not resolve reliably from Cast devices. Either HTTP or HTTPS may be accepted, but all authentication, certificate and network restrictions still apply.
 
 ### 3. Done!
 
@@ -166,10 +177,11 @@ continuously_casting_dashboards:
 | `switch_entity_state` | No | `on` | State value that enables casting for this device |
 | `speaker_groups` | No | - | Speaker groups to check before casting |
 | `remote_device_for_keepalive` | No | Disabled | Home Assistant `remote.*` entity used to keep Google TV awake (sends MENU when the configured dashboard is active) |
+| `verify_readiness` | No | `false` | Opt-in readiness telemetry; requires the companion Lovelace card and reports custom-element registration, not actual rendering |
 
 ### Dashboard rules, scheduling, and volume
 
-For each Cast device, dashboards are evaluated **in their configured order**. A dashboard qualifies only if its own time window (or `cast_continuously: true`) **and** its required control-entity state match. The first eligible dashboard is selected. A disabled dashboard does **not** prevent a later eligible one from being chosen. When no dashboard qualifies, the integration stops its active dashboard cast, without stopping unrelated media.
+For each Cast device, every dashboard is evaluated against its own time window (or `cast_continuously: true`) **and** required entity state. The **highest-priority eligible dashboard** wins; when priorities tie, configured order wins unless rotation is enabled. A disabled dashboard does not hide an eligible fallback. When no dashboard qualifies, the integration stops its active dashboard cast without intentionally stopping unrelated media.
 
 - To cast without schedule restrictions, enable **Cast continuously** in that dashboard's settings. Entity conditions still apply.
 - To avoid sound-level changes, enable **Keep device volume unchanged**. When enabled, the integration does not run CATT volume commands, including initial volume zero.
@@ -192,9 +204,9 @@ continuously_casting_dashboards:
         preserve_volume: true
 ```
 
-Here the first dashboard is preferred while its own time/entity rules match; otherwise the always-on dashboard is eligible as fallback. Set the entries in your desired priority order. No migration or new options are required for existing configurations.
+Here both dashboards use the default priority `0`, so the first is preferred while its own time/entity rules match; otherwise the always-on entry is eligible as fallback. You can set a higher `priority` explicitly to change precedence. Existing configurations retain their defaults.
 
-See the full [development roadmap](ROADMAP.md) for future reliability, discovery, diagnostics, and dashboard-readiness work.
+See the [development roadmap](ROADMAP.md) for merged functionality and remaining work.
 
 ### Priority selection and dashboard rotation
 
@@ -295,7 +307,7 @@ Concurrent device lookups share one CATT scan, with short-lived scan results and
 
 Home Assistant's integration diagnostics now provide device statuses, retry delays, scan state, and non-sensitive error summaries. Per-device diagnostic sensors expose `retry_in_seconds` and `last_error`. Dashboard URLs and authentication details are excluded from the diagnostics report. Sensor retry delays are a snapshot from the last status update and may be stale until refreshed.
 
-**Compatibility note:** These safety changes do not replace CATT or override user media/Assistant protection. An offline device cannot be confirmed from CATT status alone. Test against your Cast devices and HA version before merging.
+**Compatibility note:** These changes are already merged into `main`, but do not replace CATT or guarantee behaviour on every Cast receiver. Verify recovery and media protection on your devices before relying on them for unattended operation.
 
 ### Optional dashboard frontend readiness (experimental)
 
@@ -421,13 +433,16 @@ data:
   device_name: "Living Room Display"
 ```
 
-**Available services:**
-- `set_cast_delay` - Cast interval (5-300 seconds)
-- `set_logging_level` - debug, info, warning, error, critical
-- `set_start_time` - Start time (HH:MM)
-- `set_end_time` - End time (HH:MM)
-- `stop_casting` - Stop casting on a device or all devices
-- `resume_casting` - Resume casting on a device or trigger check on all devices
+**Available services/actions:**
+- `set_cast_delay` — Cast interval (5–300 seconds; see the configured monitoring schedule)
+- `set_logging_level` — debug, info, warning, error, critical
+- `set_start_time` / `set_end_time` — runtime global casting window (HH:MM)
+- `stop_casting` — one-off stop on a device or all devices, **not** a persistent pause
+- `pause_casting` — pause an individual device for 0 seconds (until resumed/restart) or 5–86,400 seconds
+- `resume_casting` — clear pauses and request a cast eligibility check on a device or all devices
+- `select_dashboard` — temporarily prefer a dashboard by zero-based index, 5–3600 seconds
+- `clear_dashboard_override` — return a named device to automatic priority/rotation selection
+- `report_dashboard_ready` — internal diagnostic action used by the optional frontend reporter
 
 ---
 
@@ -435,7 +450,7 @@ data:
 
 If you're currently using YAML configuration (`configuration.yaml`), follow these steps to migrate to the new UI-based configuration:
 
-Migration guide: [Migrating from YAML to UI](#-migrating-from-yaml-to-ui)
+For troubleshooting existing installations or switching from upstream to this fork, see [the upgrade guide](docs/update_help.md).
 
 ### Automatic Migration
 
@@ -463,7 +478,7 @@ Settings → Devices & Services → Continuously Casting Dashboards
 Click **Configure** on any device to manage its dashboards individually.
 Use **“Add another dashboard after saving”** to add more dashboards for a device, and **“Edit a different dashboard”** when multiple dashboards exist.
 
-> **Important:** After migration, remove the YAML configuration to avoid conflicts. The integration will show a warning if YAML config is detected alongside UI config.
+> **Important:** Confirm that devices and dashboards appear correctly in the UI **before** removing the YAML section. Keep a backup; a YAML setup alongside a UI entry can cause repeated import warnings or conflicting configurations.
 
 ---
 
@@ -471,7 +486,7 @@ Use **“Add another dashboard after saving”** to add more dashboards for a de
 
 ### Trusted Networks Setup
 
-Chromecast devices need to access Home Assistant without logging in.
+Cast receivers may not support Home Assistant's normal interactive login flow. If you use trusted network authentication, give access **only to the Cast device addresses you control**; this is a security-sensitive bypass, not a general LAN setting.
 
 1. Find your Chromecast device IPs (Settings → Device Information → Technical Information on each device)
 
@@ -491,7 +506,7 @@ homeassistant:
     - type: homeassistant    # Keep normal login for other devices
 ```
 
-> **Find your user ID:** Go to your profile in Home Assistant and look at the URL - the ID is the long string after `/profile/`
+> **Security:** Use exact `/32` device addresses, retain the normal `homeassistant` auth provider for other clients, and make sure Cast IP assignments are stable. Trusted authentication grants access from matching source addresses and should not be enabled broadly. Use a dedicated, least-privilege account where practical.
 
 ### Install ha-catt-fix
 
@@ -509,7 +524,7 @@ This prevents the dashboard from timing out after 10 minutes.
 
 ### Home Assistant 2026.11 integration import error
 
-In Home Assistant 2026.11, `EntityCategory` must be imported from `homeassistant.const`, not `homeassistant.components.sensor`. This branch includes the fix reported in [issue #161](https://github.com/b0mbays/continuously_casting_dashboards/issues/161). Restart Home Assistant after updating.
+In Home Assistant 2026.11, `EntityCategory` is imported from `homeassistant.const`. The fix reported in [upstream issue #161](https://github.com/b0mbays/continuously_casting_dashboards/issues/161) is **already merged into this fork's `main`**. Restart Home Assistant after updating the integration.
 
 ### DashCast dashboard keeps recasting every minute or few minutes
 
@@ -532,26 +547,28 @@ DEBUG Status output for Office display: Title: Dummy 22:27:13 GMT+0000
 
 ### Device not found
 
-**Cause:** Device name doesn't match exactly.
+**Possible causes:** no device discovered, ambiguous device name, network isolation, or an outdated device IP.
 
-**Solution:**
-- Check the exact name in Google Home app or on the device itself
-- In the device settings, add the IP address directly in the **IP Address** field — this bypasses name lookup entirely and is more reliable
+**Troubleshooting:**
+- Check the name in Google Home and the device's network access.
+- The integration accepts an **exact case-insensitive match** or a unique, recognized Google manufacturer/model suffix; generic prefix guessing is deliberately disabled.
+- If there are similarly named devices, configure an explicit IP address under **IP Address**, then verify that it points to the intended Cast device.
+- Download the integration diagnostics for discovery status and recent retry information.
 
 ### Dashboard won't cast
 
 **Checklist:**
-- [ ] HTTPS is configured for Home Assistant
-- [ ] Device IP is in trusted networks
-- [ ] Dashboard URL uses local IP (not `homeassistant.local`)
+- [ ] The dashboard URL is reachable from the Cast receiver (HTTP/HTTPS, correct certificate if HTTPS).
+- [ ] Authentication is configured appropriately for the receiver; trusted networks are one possible solution.
+- [ ] The hostname or IP in the dashboard URL resolves from the Cast device.
 - [ ] Current time is within the configured time window
 - [ ] No media is playing on the device
 
 ### Device shows as unreachable
 
-If a device temporarily loses network connectivity (e.g. MDNS flakiness), the integration will mark it as unreachable and show a persistent notification in Home Assistant. The dashboard resumes automatically once the device comes back online and the notification is dismissed.
+If a device temporarily loses connectivity, the integration can report it as disconnected, back off repeated failed reconnections, and create a persistent notification when enabled. Casting will be attempted again when the retry delay and normal eligibility/media checks allow it.
 
-If you have a device with an unreliable network and find the notifications noisy, you can disable them in **Settings** → **Devices & Services** → **Continuously Casting Dashboards** → **Configure** → uncheck **Enable notifications**.
+If you find notifications noisy, use the **Enable notifications** option under **Settings → Devices & Services → Continuously Casting Dashboards → Configure**. This feature PR includes a persistence fix for `false`; verify your saved setting after upgrading and reloading the integration.
 
 ### Annoying phone notifications for "DashCast"
 
@@ -562,8 +579,9 @@ Settings → Google → Devices & sharing → Cast options → Turn off "Media c
 
 ## 💬 Support
 
-- **Issues:** [GitHub Issues](https://github.com/b0mbays/continuously_casting_dashboards/issues)
-- **Discussions:** [GitHub Discussions](https://github.com/b0mbays/continuously_casting_dashboards/discussions)
+- **Issues for this fork:** [anaschillin/continuously_casting_dashboards](https://github.com/anaschillin/continuously_casting_dashboards/issues)
+- **Original upstream project:** [b0mbays/continuously_casting_dashboards](https://github.com/b0mbays/continuously_casting_dashboards)
+- **Upgrade help:** [docs/update_help.md](docs/update_help.md)
 
 ---
 
