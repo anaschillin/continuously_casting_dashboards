@@ -1264,13 +1264,11 @@ class ContinuouslyCastingDashboards:
             # Initial setup of devices - this can take time but doesn't block integration
             _LOGGER.debug("Starting device initialization in background")
             try:
-                await asyncio.wait_for(
-                    self.monitoring_manager.initialize_devices(),
-                    timeout=45,  # 45 second timeout for initial device setup
-                )
+                # This is already a background task. Discovery and CATT
+                # operations have their own timeouts; a blanket 45s limit
+                # cancels healthy startups whenever cast_delay is 60s+.
+                await self.monitoring_manager.initialize_devices()
                 _LOGGER.info("Background device initialization completed successfully")
-            except asyncio.TimeoutError:
-                _LOGGER.warning("Background device initialization timed out, continuing anyway")
             except Exception as e:
                 _LOGGER.error("Error during background device initialization: %s", str(e), exc_info=True)
                 # Don't raise - let the integration continue working
