@@ -22,6 +22,7 @@ from .device import DeviceManager
 from .monitoring import MonitoringManager
 from .stats import StatsManager
 from .readiness import ReadinessTracker
+from .repairs import async_check_configuration_repairs
 from .utils import TimeWindowChecker, SwitchEntityChecker
 from .config_flow import async_migrate_entry
 from .const import (
@@ -913,6 +914,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             config["devices"] = devices
             config["device_identifiers"] = device_identifiers
             _LOGGER.debug("Merged config: %s", config)
+
+            # Report actionable configuration problems without blocking startup.
+            await async_check_configuration_repairs(
+                hass, entry, device_identifiers
+            )
 
             # Extract configuration with fallback to defaults
             logging_level = config.get("logging_level", DEFAULT_LOGGING_LEVEL)
