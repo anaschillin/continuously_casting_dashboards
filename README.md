@@ -24,7 +24,7 @@
 
 A Home Assistant integration that casts dashboards to Chromecast-compatible displays and monitors them for recovery. It respects eligible time windows, entity states, active media and Assistant activity before attempting to resume a dashboard.
 
-**Version 3.0.1 candidate (6 November 2026):** The integration and Marketplace/HACS metadata declare **3.0.1**, updating CATT to `0.13.3`. Review the [changelog](CHANGELOG.md), [upgrade guide](docs/update_help.md) and [CATT compatibility notes](docs/CAST_BACKENDS.md). Live Chromecast/HAOS verification is still required; a source-code version bump does **not** create a published GitHub release. The optional frontend-readiness reporter remains diagnostic-only.
+**Version 3.0.2 candidate (6 November 2026):** The integration and Marketplace/HACS metadata on this feature branch declare **3.0.2**, introducing optional Cast-wide recovery for third-party custom cards. The prior 3.0.1 dependency update pins CATT `0.13.3`. Check the [changelog](CHANGELOG.md), [upgrade guide](docs/update_help.md) and [CATT compatibility notes](docs/CAST_BACKENDS.md). The generic recovery option still needs physical Cast-device testing; changing version metadata does **not** publish a GitHub release. The independent frontend-readiness reporter remains diagnostic-only.
 
 See [ROADMAP.md](ROADMAP.md) for implemented and unfinished work, and [the upgrade guide](docs/update_help.md) before switching from another installation source.
 
