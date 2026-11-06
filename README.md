@@ -498,7 +498,7 @@ DEBUG Status output for Office display: Title: Dummy 22:27:13 GMT+0000
 
 If a device temporarily loses connectivity, the integration can report it as disconnected, back off repeated failed reconnections, and create a persistent notification when enabled. Casting will be attempted again when the retry delay and normal eligibility/media checks allow it.
 
-If you have a device with an unreliable network and find the notifications noisy, you can disable them in **Settings** → **Devices & Services** → **Continuously Casting Dashboards** → **Configure** → uncheck **Enable notifications**.
+If you find the notifications noisy, the **Enable notifications** option is available under **Settings → Devices & Services → Continuously Casting Dashboards → Configure**. **Known limitation in merged PRs #2–#5:** the global options flow does not reliably persist an unchecked value; the fix is being developed separately. Confirm its saved value after reloading, rather than assuming the toggle has taken effect.
 
 ### Annoying phone notifications for "DashCast"
 
