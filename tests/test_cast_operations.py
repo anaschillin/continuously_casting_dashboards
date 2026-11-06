@@ -12,6 +12,7 @@ import logging
 from pathlib import Path
 import time
 import types
+from typing import Any
 import unittest
 
 from test_cast_reliability import isolated_method
@@ -152,6 +153,7 @@ class GlobalSettingsTests(unittest.TestCase):
         harness = isolated_method(
             "config_flow.py", "GlobalSettingsOptionsFlow", "async_step_init",
             {
+                "Any": Any,
                 "_normalise_time_selector": lambda value: (
                     value.strftime("%H:%M:%S")
                     if isinstance(value, dt_time) else value
