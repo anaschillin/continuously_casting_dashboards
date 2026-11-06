@@ -10,6 +10,9 @@ This roadmap tracks planned improvements for [Continuously Casting Dashboards](h
 
 ## Milestone 1 — dashboard rules, scheduling, and volume (in progress)
 
+**Implementation underway:** [draft PR #2](https://github.com/anaschillin/continuously_casting_dashboards/pull/2) includes independent rule selection, opt-in continuous casting, volume preservation, UI persistence changes, and regression tests. The code-level checks have passed; the milestone remains open until the changes are confirmed on a live Home Assistant / Chromecast deployment.
+
+
 - [ ] Evaluate time and required entity state **per dashboard**. First eligible dashboard in configuration order wins; no disabled dashboard should block another eligible dashboard ([upstream #145](https://github.com/b0mbays/continuously_casting_dashboards/issues/145)).
 - [ ] Support an explicit **cast continuously** option for dashboards that should not use global or custom time windows ([upstream #156](https://github.com/b0mbays/continuously_casting_dashboards/issues/156)).
 - [ ] Support **preserve volume** so casting neither mutes nor changes existing device volume ([upstream #142](https://github.com/b0mbays/continuously_casting_dashboards/issues/142)).
