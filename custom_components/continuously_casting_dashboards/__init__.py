@@ -1053,7 +1053,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                 
                 # 🚀 START BACKGROUND DEVICE INITIALIZATION - doesn't block integration loading
                 _LOGGER.info("Integration loaded successfully, starting device initialization in background...")
-                hass.async_create_task(caster.start_background_initialization())
+                startup_task = hass.async_create_task(
+                    caster.start_background_initialization()
+                )
+                caster._background_tasks.append(startup_task)
                 
                 _LOGGER.info("Entry %s setup completed successfully", entry.entry_id)
                 return True
@@ -1142,7 +1145,10 @@ async def async_reload_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
             _LOGGER.debug(f"Options after reload: {entry.options}")
             
             # Start background initialization after reload
-            hass.async_create_task(new_instance.start_background_initialization())
+            startup_task = hass.async_create_task(
+                new_instance.start_background_initialization()
+            )
+            new_instance._background_tasks.append(startup_task)
             
         except asyncio.TimeoutError:
             _LOGGER.error(f"Reload timed out for entry {entry.entry_id}")
@@ -1312,13 +1318,10 @@ class ContinuouslyCastingDashboards:
             # Initial setup of devices - this can take time but doesn't block integration
             _LOGGER.debug("Starting device initialization in background")
             try:
-                await asyncio.wait_for(
-                    self.monitoring_manager.initialize_devices(),
-                    timeout=45,  # 45 second timeout for initial device setup
-                )
+                # This already runs in the background. Individual CATT
+                # operations have timeouts; 45s would cancel healthy startups.
+                await self.monitoring_manager.initialize_devices()
                 _LOGGER.info("Background device initialization completed successfully")
-            except asyncio.TimeoutError:
-                _LOGGER.warning("Background device initialization timed out, continuing anyway")
             except Exception as e:
                 _LOGGER.error("Error during background device initialization: %s", str(e), exc_info=True)
                 # Don't raise - let the integration continue working
