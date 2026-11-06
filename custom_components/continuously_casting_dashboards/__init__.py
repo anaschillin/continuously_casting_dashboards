@@ -399,6 +399,11 @@ async def async_setup(hass: HomeAssistant, config: dict):
             "/ccd_cast/ccd-readiness-card.js",
             str(Path(__file__).parent / "www" / "ccd-readiness-card.js"),
             False,
+        ),
+        StaticPathConfig(
+            "/ccd_cast/ccd-control-panel.js",
+            str(Path(__file__).parent / "www" / "ccd-control-panel.js"),
+            False,
         )
     ])
 
