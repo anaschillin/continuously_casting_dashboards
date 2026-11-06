@@ -276,12 +276,12 @@ class MonitoringManager:
                 _LOGGER.warning("Could not get IP for %s, skipping check", target_device_name)
                 return
 
-            # Get the current device config
-            if target_device_name not in self.active_device_configs:
-                _LOGGER.warning("No active configuration for %s, skipping", target_device_name)
-                return
-                
+            # Refresh selection first: a control can change before the first
+            # regular poll created an active entry for the target device.
             await self.async_update_device_configs()
+            if target_device_name not in self.active_device_configs:
+                _LOGGER.warning("No configuration for %s, skipping", target_device_name)
+                return
             active_config_info = self.active_device_configs[target_device_name]
             current_config = active_config_info['config']
             await self._process_single_device(target_device_name, ip, current_config)
@@ -334,6 +334,7 @@ class MonitoringManager:
                     await self.async_stop_casting(ip)
                 self.device_manager.update_active_device(
                     device_key=device_key, status='stopped',
+                    name=device_name, ip=ip,
                     last_checked=datetime.now().isoformat(),
                 )
                 return
