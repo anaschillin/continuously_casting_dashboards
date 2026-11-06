@@ -56,7 +56,7 @@ This roadmap tracks work in [Continuously Casting Dashboards](https://github.com
 
 ## Outstanding compatibility and readiness work
 
-- [ ] Validate v3.0.0 in an actual Home Assistant installation across normal reloads/restarts, multiple devices, media interruptions, and frontend resource reloads.
+- [ ] Validate the latest 3.0.x candidate in an actual Home Assistant installation across normal reloads/restarts, multiple devices, media interruptions, and frontend resource reloads.
 - [ ] Verify the proposed CATT `0.13.3` upgrade on actual HAOS and Cast hardware, including media protection, status interpretation, discovery and Dashboard URLs. The feature branch contains the new pin; a successful CLI smoke test alone is not sufficient.
 - [ ] Investigate alternative Cast backends with an opt-in adapter; [backend assessment](docs/CAST_BACKENDS.md) is design/evaluation, not a released backend.
 - [ ] Verify receiver-specific, authenticated frontend readiness rather than accepting a heartbeat that could come from another browser.
