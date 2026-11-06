@@ -24,7 +24,7 @@
 
 A Home Assistant integration that casts dashboards to Chromecast-compatible displays and monitors them for recovery. It respects eligible time windows, entity states, active media and Assistant activity before attempting to resume a dashboard.
 
-**Version 3.0.2 candidate (6 November 2026):** The integration and Marketplace/HACS metadata on this feature branch declare **3.0.2**, introducing optional Cast-wide recovery for third-party custom cards. The prior 3.0.1 dependency update pins CATT `0.13.3`. Check the [changelog](CHANGELOG.md), [upgrade guide](docs/update_help.md) and [CATT compatibility notes](docs/CAST_BACKENDS.md). The generic recovery option still needs physical Cast-device testing; changing version metadata does **not** publish a GitHub release. The independent frontend-readiness reporter remains diagnostic-only.
+**Current merged version: 3.0.3 (6 November 2026).** The backend startup timeout fix is merged, alongside optional Cast-wide custom-card recovery from v3.0.2 and CATT `0.13.3` from v3.0.1. This PR adds receiver-side diagnostics but does not change the integration version or claim a published release. See the [changelog](CHANGELOG.md), [upgrade guide](docs/update_help.md), and [CATT compatibility notes](docs/CAST_BACKENDS.md). Browser diagnostics require physical Cast testing.
 
 See [ROADMAP.md](ROADMAP.md) for implemented and unfinished work, and [the upgrade guide](docs/update_help.md) before switching from another installation source.
 
@@ -528,7 +528,6 @@ data:
 - `stop_casting` — one-off stop on a device or all devices, **not** a persistent pause
 - `pause_casting` — pause an individual device for 0 seconds (until resumed/restart) or 5–86,400 seconds
 - `resume_casting` — clear pauses and request a cast eligibility check on a device or all devices
-- `resume_casting` — trigger a cast check on a device or all devices
 - `select_dashboard` — temporarily prefer a dashboard by zero-based index, 5–3600 seconds
 - `clear_dashboard_override` — return a named device to automatic priority/rotation selection
 - `report_dashboard_ready` — internal diagnostic action used by the optional frontend reporter
@@ -629,6 +628,22 @@ Confirm that the target display has a matching **Cast** `media_player` entity in
 ```
 DEBUG Status output for Office display: Title: Dummy 22:27:13 GMT+0000
 ```
+
+### Background device initialization timed out
+
+In v3.0.2 and earlier, a 45-second deadline surrounded initial casting even
+though the default inter-device delay was 60 seconds and was applied after the
+last Cast attempt. A successful receiver could therefore produce
+`Background device initialization timed out, continuing anyway`.
+
+**Fixed in v3.0.3:** the integration no longer cancels its already-background
+startup after 45 seconds; CATT operation timeouts remain intact. Delays apply
+only between actual initial casts, and startup tasks are tracked for unload.
+
+This warning describes **backend initialization**, not the cause of any
+Lovelace **Configuration error**. Use the
+[generic custom-card recovery and receiver diagnostics](#generic-custom-card-recovery-for-cast-receivers-opt-in)
+for the latter.
 
 ### Device not found
 
