@@ -143,5 +143,55 @@ class BackgroundStartupTests(unittest.TestCase):
         self.assertTrue(obj.background_started)
 
 
+    def test_unload_cancels_pending_background_initialization(self):
+        cancel_seen = []
+
+        async def cleanup():
+            return None
+
+        harness = isolated_method(
+            "__init__.py",
+            "ContinuouslyCastingDashboards",
+            "stop",
+            {"_LOGGER": LOGGER, "asyncio": asyncio},
+        )
+        obj = harness()
+        obj._background_tasks = []
+        obj.unsubscribe_listeners = []
+        obj.monitoring_manager = SimpleNamespace(cleanup=cleanup)
+        obj.readiness_tracker = SimpleNamespace(clear=lambda: None)
+        obj.device_manager = SimpleNamespace(clear_all_caches=lambda: None)
+        obj.casting_manager = SimpleNamespace(cleanup=cleanup)
+
+        async def initialisation():
+            try:
+                await asyncio.Event().wait()
+            finally:
+                cancel_seen.append("cancelled")
+
+        async def check():
+            task = asyncio.create_task(initialisation())
+            obj._background_tasks.append(task)
+            await asyncio.sleep(0)
+            self.assertTrue(await obj.stop())
+            self.assertTrue(task.cancelled())
+
+        asyncio.run(check())
+        self.assertEqual(cancel_seen, ["cancelled"])
+        self.assertEqual(obj._background_tasks, [])
+
+    def test_setup_and_reload_track_initialization_task(self):
+        from pathlib import Path
+
+        source = (
+            Path(__file__).resolve().parents[1]
+            / "custom_components"
+            / "continuously_casting_dashboards"
+            / "__init__.py"
+        ).read_text()
+        self.assertIn("caster._background_tasks.append(startup_task)", source)
+        self.assertIn("new_instance._background_tasks.append(startup_task)", source)
+
+
 if __name__ == "__main__":
     unittest.main()
