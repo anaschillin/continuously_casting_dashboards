@@ -958,8 +958,6 @@ class DeviceSubentryFlow(ConfigSubentryFlow):
                 # Update the keepalive remote entity if provided
                 if user_input.get("remote_device_for_keepalive") is not None:
                     cleaned_input["remote_device_for_keepalive"] = user_input["remote_device_for_keepalive"]
-                elif current.get("remote_device_for_keepalive"):
-                    cleaned_input["remote_device_for_keepalive"] = current["remote_device_for_keepalive"]
 
                 if user_input.get("volume") is not None:
                     cleaned_input["volume"] = user_input["volume"]
