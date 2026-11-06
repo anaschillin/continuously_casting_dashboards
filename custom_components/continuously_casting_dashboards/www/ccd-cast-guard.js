@@ -75,12 +75,14 @@
 
     // Storage must be writable. Fail closed when the browser disallows it:
     // reloading without a persisted guard can create an infinite loop.
-    let last = 0;
     try {
-      last = Number(window.sessionStorage.getItem(key)) || 0;
-      if (Date.now() - last < RETRY_COOLDOWN_MS) {
-        complete = true;
-        return;
+      const previous = window.sessionStorage.getItem(key);
+      if (previous !== null) {
+        const age = Date.now() - Number(previous);
+        if (Number.isFinite(age) && age >= 0 && age < RETRY_COOLDOWN_MS) {
+          complete = true;
+          return;
+        }
       }
       window.sessionStorage.setItem(key, String(Date.now()));
     } catch (_error) {
