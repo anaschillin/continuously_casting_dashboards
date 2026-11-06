@@ -31,7 +31,7 @@ function runGuard({
 } = {}) {
   const callbacks = [];
   const warnings = [];
-  const result = {reloads: 0, callbacks, warnings, storage, root};
+  const result = {reloads: 0, lastUrl: null, callbacks, warnings, storage, root};
   const sessionStorage = {
     getItem(key) {
       if (blockStorage) throw new Error("storage denied");
@@ -44,9 +44,13 @@ function runGuard({
   };
   const window = {
     location: {
+      href: "https://ha.example/dashboard-test/kiosk" + search,
       pathname: "/dashboard-test/kiosk",
       search,
-      reload() { result.reloads += 1; },
+      replace(url) {
+        result.reloads += 1;
+        result.lastUrl = url;
+      },
     },
     setTimeout(fn, delay) { callbacks.push({fn, delay}); },
     sessionStorage,
@@ -56,7 +60,7 @@ function runGuard({
     static now() { return currentTime; }
   }
   vm.runInNewContext(script, {
-    window, document, URLSearchParams, Date: FakeDate, Math,
+    window, document, URL, URLSearchParams, Date: FakeDate, Math,
     console: {warn: msg => warnings.push(msg)},
   });
   return result;
@@ -88,6 +92,9 @@ test("persistent error behind shadow roots triggers only one soft reload", () =>
   r.callbacks[3].fn();
   assert.equal(r.reloads, 1);
   assert.equal(r.storage.size, 1);
+  const reloaded = new URL(r.lastUrl);
+  assert.equal(reloaded.searchParams.get("ccd_cast_guard"), "done");
+  assert.equal(reloaded.pathname, "/dashboard-test/kiosk");
 });
 
 test("error must remain visible across two checks", () => {
@@ -117,6 +124,12 @@ test("reload is throttled across browser reloads within cooldown", () => {
   });
   for (const check of second.callbacks) check.fn();
   assert.equal(second.reloads, 0, "same receiver cannot reload in a loop");
+  const exhausted = runGuard({
+    search: "?ccd_cast_guard=done",
+    root: dashboard(true),
+    storage: new Map(),
+  });
+  assert.equal(exhausted.callbacks.length, 0, "spent query flag also prevents loops");
 });
 
 test("storage denial fails closed: never reload without a persistent guard", () => {
