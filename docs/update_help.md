@@ -2,7 +2,7 @@
 
 This is the **current upgrade guide** for [anaschillin/continuously_casting_dashboards](https://github.com/anaschillin/continuously_casting_dashboards). It supersedes older instructions written for v1.1.4. Those older instructions advised removing and reinstalling everything; that is **not the normal upgrade path** and risks losing configuration.
 
-The fork's v3.0.0 baseline includes [PRs #2–#6](../ROADMAP.md), covering dashboard rules, discovery, readiness reporting, controls, pause/resume and Repairs. The follow-up **3.0.1 candidate** upgrades CATT from 0.12.13 to **0.13.3** and updates documentation. The integration and Marketplace metadata match, but check actual published GitHub releases before assuming a tagged 3.0.1 download exists. Hardware compatibility remains unverified.
+The current merged code version is **3.0.3**. The v3.0.0 foundation added dashboard rules, recovery, readiness reporting, controls, pause/resume and Repairs. Version 3.0.1 pinned **CATT 0.13.3**, v3.0.2 added opt-in Cast custom-card recovery, and v3.0.3 merged the startup fix and receiver-side diagnostics. Integration and Marketplace metadata match, but **a merged version number is not a published GitHub release**. Real receiver compatibility still needs validation.
 
 ## Before changing anything
 
@@ -14,7 +14,7 @@ The fork's v3.0.0 baseline includes [PRs #2–#6](../ROADMAP.md), covering dashb
 ## Update an existing installation
 
 1. On **Home Assistant 2026.11+**, go to **Settings → Marketplace**. Choose **Add from link** and enter `https://github.com/anaschillin/continuously_casting_dashboards` (type **Integration** if prompted). The older HACS interface is used only on Home Assistant versions before 2026.11.
-2. When a version containing the updated dependency is available, install/update it through Marketplace (or older HACS). For manual installs, replace only the integration files in `config/custom_components/continuously_casting_dashboards/`. The manifest instructs Home Assistant to install CATT; do **not** manually modify HAOS's managed Python environment.
+2. When a matching release or installable version is available, install/update it through Marketplace (or older HACS). Verify the published version independently of the manifest's number. For manual installs, replace only the integration files in `config/custom_components/continuously_casting_dashboards/`. The manifest instructs Home Assistant to install CATT; do **not** manually modify HAOS's managed Python environment.
 3. Restart Home Assistant.
 4. Open **Settings → Devices & Services → Continuously Casting Dashboards**. Verify configured devices, schedules, dashboard order and state conditions.
 5. Confirm at least one Cast display can load the expected dashboard. If using multiple dashboards, check an entity-controlled fallback and a scheduled transition.
@@ -31,8 +31,13 @@ The fork's v3.0.0 baseline includes [PRs #2–#6](../ROADMAP.md), covering dashb
 | [#4](https://github.com/anaschillin/continuously_casting_dashboards/pull/4) | Yes | Priorities, rotation, debounced entity switching, temporary dashboard override services |
 | [#5](https://github.com/anaschillin/continuously_casting_dashboards/pull/5) | Yes | Optional custom-element readiness reporter and non-disruptive diagnostics |
 | [#6](https://github.com/anaschillin/continuously_casting_dashboards/pull/6) | Yes | Cast control panel, timed pause/resume, Repairs, notification persistence fix and 3.0.0 version bump |
+| [#9](https://github.com/anaschillin/continuously_casting_dashboards/pull/9) | Yes | CATT 0.13.3 dependency pin, compatibility checks and docs (3.0.1) |
+| [#10](https://github.com/anaschillin/continuously_casting_dashboards/pull/10) | Yes | Opt-in Cast custom-card recovery with a guarded receiver-page reload (3.0.2) |
+| [#11](https://github.com/anaschillin/continuously_casting_dashboards/pull/11) | Yes | Fix misleading background startup timeout (3.0.3) |
+| [#12](https://github.com/anaschillin/continuously_casting_dashboards/pull/12) | Yes | Opt-in receiver diagnostics associated with the 3.0.3 code baseline; no version bump |
+| [#13](https://github.com/anaschillin/continuously_casting_dashboards/pull/13) | Yes | Credits for the original maintainer and upstream merged and incorporated PR authors; no runtime change |
 
-All five feature PRs were merged on 6 November 2026. **A merged feature is not automatically a published release or verified on every display.** See [the roadmap](../ROADMAP.md) for outstanding features and validation.
+These changes are merged in source. **A merged change is not automatically a published release or verified on every display.** See the [changelog](../CHANGELOG.md) for past work and [roadmap](../ROADMAP.md) for remaining work and validation.
 
 ## CATT 0.13.3 upgrade checks and rollback
 
