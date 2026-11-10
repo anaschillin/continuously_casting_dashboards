@@ -25,9 +25,9 @@
 
 A Home Assistant integration that casts dashboards to Chromecast-compatible displays and monitors them for recovery. It respects eligible time windows, entity states, active media and Assistant activity before attempting to resume a dashboard.
 
-**Current merged version: 3.0.3 (6 November 2026).** The backend startup timeout fix is merged, alongside optional Cast-wide custom-card recovery from v3.0.2 and CATT `0.13.3` from v3.0.1. This PR adds receiver-side diagnostics but does not change the integration version or claim a published release. See the [changelog](CHANGELOG.md), [upgrade guide](docs/update_help.md), and [CATT compatibility notes](docs/CAST_BACKENDS.md). Browser diagnostics require physical Cast testing.
+**Current merged code version: 3.0.3 (6 November 2026).** It includes the backend startup fix ([#11](https://github.com/anaschillin/continuously_casting_dashboards/pull/11)) and receiver-side Cast diagnostics ([#12](https://github.com/anaschillin/continuously_casting_dashboards/pull/12)), building on opt-in custom-card recovery from v3.0.2 and CATT `0.13.3` from v3.0.1. Version metadata does not imply a tagged GitHub release. See the [changelog](CHANGELOG.md), [upgrade guide](docs/update_help.md), and [CATT compatibility notes](docs/CAST_BACKENDS.md). Receiver diagnostics and recovery still require physical Cast validation.
 
-See [ROADMAP.md](ROADMAP.md) for implemented and unfinished work, and [the upgrade guide](docs/update_help.md) before switching from another installation source.
+See [ROADMAP.md](ROADMAP.md) for upcoming work and remaining validation, and [the upgrade guide](docs/update_help.md) before switching from another installation source.
 
 <p align="center">
   <img src="https://github.com/b0mbays/continuously_casting_dashboards/assets/55556007/9cc32333-312e-41cf-bca0-e531e535a268" width="75%" alt="Dashboard on Nest Hub">
@@ -67,7 +67,7 @@ Before installing, ensure you have:
 | **Reachable dashboard URL** | The Cast device must be able to load the configured Home Assistant dashboard. The integration accepts `http://` and `https://` URLs; use HTTPS when practical. |
 | **Dashboard authentication** | The receiver must be able to access the dashboard. If trusted networks are necessary, restrict them to specific Cast device IPs ([setup guidance](#trusted-networks-setup)). |
 | **CATT** | The integration requires the CATT CLI, now pinned to `catt==0.13.3` (Python 3.11+, PyChromecast 14.x). Home Assistant normally installs the manifest requirement automatically. |
-| **ha-catt-fix** | Recommended for affected devices if the display times out; see [installation guidance](#install-ha-catt-fix). |
+| **ha-catt-fix** | Recommended for affected devices if the display times out; see [installation guidance](#install-ha-catt-fix-optional). |
 | **Kiosk Mode** | *Optional*—hides Home Assistant navigation bars ([project](https://github.com/NemesisRE/kiosk-mode)). |
 
 ## 📦 Installation
@@ -162,7 +162,7 @@ continuously_casting_dashboards:
 | Option | Required | Default | Description |
 |--------|----------|---------|-------------|
 | `logging_level` | Yes | `warning` | Log verbosity: `debug`, `info`, `warning`, `error`, `critical` |
-| `cast_delay` | Yes | `45` | Seconds between checking each device (5-300) |
+| `cast_delay` | Yes | `60` | Seconds between checking each device (5-300) |
 | `start_time` | No | `07:00` | When to start casting (HH:MM format) |
 | `end_time` | No | `01:00` | When to stop casting (HH:MM format) |
 | `switch_entity_id` | No | - | Entity that controls casting on/off globally |
@@ -215,7 +215,7 @@ continuously_casting_dashboards:
 
 Here both dashboards use the default priority `0`, so the first is preferred while its own time/entity rules match; otherwise the always-on entry is eligible as fallback. You can set a higher `priority` explicitly to change precedence. Existing configurations retain their defaults.
 
-See the [development roadmap](ROADMAP.md) for merged functionality and remaining work.
+See the [development roadmap](ROADMAP.md) for remaining work, and the [changelog](CHANGELOG.md) for implemented changes.
 
 ### Priority selection and dashboard rotation
 
@@ -619,16 +619,14 @@ Confirm that the target display has a matching **Cast** `media_player` entity in
 
 ### Dashboard stops after a few seconds
 
-**Cause:** ha-catt-fix not installed correctly.
+A dashboard that disappears shortly after casting can have several causes: receiver network or authentication problems, a browser/DashCast interruption, timeout recovery, or a receiver-specific inactivity issue. **Do not assume a missing `ha-catt-fix` is the cause.**
 
-**Solution:**
-1. Set `logging_level: debug` in your config
-2. Check Home Assistant logs for status output
-3. Look for `Title: Dummy` in the logs - if missing, reinstall ha-catt-fix
+1. Enable debug logging and inspect the CCD logs for the target device's status and recent errors.
+2. Verify the Cast device can open the dashboard URL and that its Home Assistant Cast `media_player` identity matches the configured device.
+3. Check whether user media, Assistant activity, time windows, or entity conditions interrupted casting.
+4. If a receiver consistently times out during idle display, consider the [optional ha-catt-fix resource](#install-ha-catt-fix-optional) and follow its own installation guidance.
 
-```
-DEBUG Status output for Office display: Title: Dummy 22:27:13 GMT+0000
-```
+A `Title: Dummy …` status is a useful DashCast diagnostic on some setups, **not** a universal requirement or proof that `ha-catt-fix` is installed correctly.
 
 ### Background device initialization timed out
 
@@ -698,5 +696,5 @@ This fork also incorporates adapted work originally proposed by **[@phazethru](h
 ---
 
 <p align="center">
-  <sub>Tested with Lenovo Smart Display 8, Google Nest Hub (1st Gen)</sub>
+  <sub>Cast receiver behaviour varies by device and firmware; validate your setup before unattended use.</sub>
 </p>
