@@ -2,18 +2,20 @@
 
 All changes here refer to the [anaschillin fork](https://github.com/anaschillin/continuously_casting_dashboards). Home Assistant integration and HACS metadata are maintained together; a merged commit or version field does **not** automatically create a tagged GitHub release or HACS download.
 
-## 3.0.3 — Background startup initialization fix (merged 6 November 2026)
+## 3.0.3 — Startup reliability and receiver diagnostics (merged code, 6 November 2026)
 
 - Remove the 45-second blanket initialization timeout, which could cancel
   successful startup when the inter-device delay was 60 seconds.
 - Apply `cast_delay` only between actual initial casting attempts.
 - Track background startup tasks and cancel them cleanly on reload/unload.
-- Add startup sequence and task lifecycle regression tests.
+- Add startup sequence and task lifecycle regression tests ([#11](https://github.com/anaschillin/continuously_casting_dashboards/pull/11)).
+- Add privacy-conscious, opt-in receiver-side Cast telemetry reporting counts of Lovelace error cards, script/resource failures, JavaScript errors, registered custom cards and reload phases; expose `cast_frontend` in status sensors and downloadable Home Assistant diagnostics ([#12](https://github.com/anaschillin/continuously_casting_dashboards/pull/12)).
+- Treat `no_report` as inconclusive; reports cannot authenticate a unique physical receiver or establish exact frontend load timing. Physical validation is still necessary.
 
 The backend initialization warning is **not** proof of a Lovelace
 configuration error, which requires separate frontend diagnostics.
 
-## 3.0.2 — Generic custom-card recovery on Cast (candidate, 6 November 2026)
+## 3.0.2 — Generic custom-card recovery on Cast (merged code, 6 November 2026)
 
 - Add opt-in `recover_custom_cards` for any dashboard, independent of
   custom-card vendor or Home Assistant integration.
@@ -24,17 +26,11 @@ configuration error, which requires separate frontend diagnostics.
 - Prevent reload loops with a consumed URL marker, per-dashboard
   15-minute session cooldown, and fail-closed behaviour without storage.
 - Add Python URL-parameter tests and JavaScript simulated-DOM recovery tests.
-- Add optional authenticated receiver-side diagnostic heartbeats and bounded,
-  privacy-safe counts for persistent error cards, script/link load errors,
-  JavaScript errors, custom-card registration and reload phases.
-- Expose `cast_frontend` via device status sensor attributes and downloadable
-  Home Assistant integration diagnostics, including inconclusive
-  `no_report` when receiver telemetry never reaches Home Assistant.
 
 **Default:** disabled. This mitigates some Home Assistant custom-resource
 startup races but cannot fix invalid Lovelace YAML, unavailable modules, or
 all Cast receiver limitations. Physical Chromecast/Nest Hub testing remains
-required before merge.
+necessary before claiming hardware-verified behaviour.
 
 ## 3.0.1 — CATT compatibility update (merged code, 6 November 2026)
 
@@ -73,7 +69,7 @@ The major version reflects a large set of configuration, casting, and Lovelace i
 
 1. **Back up Home Assistant** before upgrading, especially if coming from the original upstream repository or YAML configuration.
 2. Use only one HACS installation source for the `continuously_casting_dashboards` integration domain. This fork's custom repository is `https://github.com/anaschillin/continuously_casting_dashboards`.
-3. In the **3.0.0 code baseline**, the manifest pinned `catt==0.12.13`; the proposed **3.0.1** update changes that pin to 0.13.3 and requires separate device validation.
+3. In the **3.0.0 code baseline**, the manifest pinned `catt==0.12.13`; the subsequent **3.0.1** update changed that pin to 0.13.3 and requires separate device validation.
 4. Optional UI features require registering the JavaScript resources: `/ccd_cast/ccd-control-panel.js` for the control panel, and `/ccd_cast/ccd-readiness-card.js` for readiness reporting.
 5. `stop_casting` remains a one-off stop. Use `pause_casting` for a temporary or indefinite pause. Indefinite pauses are **in memory** and end after a restart or explicit resume.
 6. A frontend heartbeat cannot prove that a particular Chromecast rendered the dashboard. No automatic recast is initiated from a missing heartbeat.
