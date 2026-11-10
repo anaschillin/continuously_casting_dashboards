@@ -2,6 +2,12 @@
 
 All changes here refer to the [anaschillin fork](https://github.com/anaschillin/continuously_casting_dashboards). Home Assistant integration and HACS metadata are maintained together; a merged commit or version field does **not** automatically create a tagged GitHub release or HACS download.
 
+## Unreleased — upstream history sync (10 November 2026)
+
+- Reconcile upstream [b0mbays/main](https://github.com/b0mbays/continuously_casting_dashboards/commits/main/) through version 2.1.4, retaining its three new commits in this fork's Git ancestry.
+- The upstream Home Assistant 2026.11 `EntityCategory` import correction ([upstream #162](https://github.com/b0mbays/continuously_casting_dashboards/pull/162)) was independently implemented in this fork's [#1](https://github.com/anaschillin/continuously_casting_dashboards/pull/1); no additional runtime change is required.
+- Preserve this fork's 3.0.3 manifest/HACS version, `catt==0.13.3`, fork-specific metadata and features instead of replacing them with upstream 2.1.4 values. This history reconciliation does not constitute a new release.
+
 ## 3.0.3 — Startup reliability and receiver diagnostics (merged code, 6 November 2026)
 
 - Remove the 45-second blanket initialization timeout, which could cancel
