@@ -16,6 +16,7 @@
   <a href="#quick-start">Quick Start</a> •
   <a href="#configuration">Configuration</a> •
   <a href="ROADMAP.md">Roadmap</a> •
+  <a href="CREDITS.md">Credits</a> •
   <a href="#-migrating-from-yaml-to-ui">Migration</a> •
   <a href="#troubleshooting">Troubleshooting</a>
 </p>
@@ -673,6 +674,18 @@ If you find notifications noisy, use **Settings → Devices & Services → Conti
 
 **Solution:** On your Android phone:
 Settings → Google → Devices & sharing → Cast options → Turn off "Media controls for Cast devices"
+
+---
+
+## 🙏 Credits and acknowledgements
+
+This repository builds on the original **[Continuously Casting Dashboards](https://github.com/b0mbays/continuously_casting_dashboards)**, created and maintained by **[@b0mbays](https://github.com/b0mbays)**. Its original [MIT license and copyright notice](LICENSE) remain in place.
+
+Thanks to upstream contributors **[@0xAHA](https://github.com/0xAHA)**, **[@dhruvb14](https://github.com/dhruvb14)**, **[@purplefis](https://github.com/purplefis)** and **[@jhbruhn](https://github.com/jhbruhn)** for work merged into the original project, and **[@DerRemo](https://github.com/DerRemo)** for the later upstream Home Assistant 2026.11 compatibility fix.
+
+This fork also incorporates adapted work originally proposed by **[@phazethru](https://github.com/phazethru)** ([upstream #152](https://github.com/b0mbays/continuously_casting_dashboards/pull/152)), **[@mrmees](https://github.com/mrmees)** ([upstream #153](https://github.com/b0mbays/continuously_casting_dashboards/pull/153)) and **[@bakerboy908](https://github.com/bakerboy908)** ([upstream #154](https://github.com/b0mbays/continuously_casting_dashboards/pull/154)), consolidated in [fork PR #1](https://github.com/anaschillin/continuously_casting_dashboards/pull/1).
+
+**See [CREDITS.md](CREDITS.md) for individual contributions, source PRs and the full upstream contributor history.**
 
 ---
 
