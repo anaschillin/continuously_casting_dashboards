@@ -19,4 +19,4 @@ On Home Assistant **2026.11 or newer**, open **Settings → Marketplace → Add 
 
 See [README.md](README.md) for setup, configuration, dashboard selection and examples, and [CHANGELOG.md](CHANGELOG.md) for release history, including the v3.0.1 dependency change. Use [the upgrade/troubleshooting guide](docs/update_help.md) when updating an existing installation, and [ROADMAP.md](ROADMAP.md) for outstanding work.
 
-This fork builds on the [original b0mbays project](https://github.com/b0mbays/continuously_casting_dashboards). Development and testing contributions are welcome through [this fork's issue tracker](https://github.com/anaschillin/continuously_casting_dashboards/issues).
+This fork builds on the [original b0mbays project](https://github.com/b0mbays/continuously_casting_dashboards). See [credits and upstream attribution](CREDITS.md) for the original maintainer, upstream contributors, and PRs incorporated into this fork. Development and testing contributions are welcome through [this fork's issue tracker](https://github.com/anaschillin/continuously_casting_dashboards/issues).
