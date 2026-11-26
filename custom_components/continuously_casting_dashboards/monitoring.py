@@ -341,6 +341,8 @@ class MonitoringManager:
             return None, False
         eligible = []
         for index, config in enumerate(configs):
+            if not config.get("device_casting_enabled", True):
+                continue
             if not await self.time_window_checker.async_is_within_time_window(
                 device_name, config
             ):
@@ -1101,6 +1103,8 @@ class MonitoringManager:
             device_config: The dashboard configuration dict (must contain 'dashboard_url').
             ip: Pre-resolved IP address. If None, it will be resolved automatically.
         """
+        if not device_config.get("device_casting_enabled", True):
+            return
         _LOGGER.info("Starting casting to %s", device_name)
         
         # Get device IP if not provided
@@ -1356,6 +1360,8 @@ class MonitoringManager:
         Returns:
             True if reconnection succeeded, False otherwise.
         """
+        if not device_config.get("device_casting_enabled", True):
+            return False
         device_key = f"{device_name}_{ip}"
         
         # Check if a cast is already in progress

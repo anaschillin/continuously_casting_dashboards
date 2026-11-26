@@ -2,6 +2,10 @@
 
 All changes here refer to the [anaschillin fork](https://github.com/anaschillin/continuously_casting_dashboards). Home Assistant integration and HACS metadata are maintained together; a merged commit or version field does **not** automatically create a tagged GitHub release or HACS download.
 
+## Unreleased — device casting control
+
+- Add a persistent per-device Enable casting setting in the integration configuration, independent of timed pause and dashboard schedules.
+
 ## Unreleased — upstream history sync (10 November 2026)
 
 - Reconcile upstream [b0mbays/main](https://github.com/b0mbays/continuously_casting_dashboards/commits/main/) through version 2.1.4, retaining its three new commits in this fork's Git ancestry.

@@ -129,6 +129,7 @@ All settings can be managed through **Settings** → **Devices & Services** → 
 
 **Managing device dashboards**
 - Click **Configure** on a device to edit its dashboard settings in a single form.
+- Turn off **Enable casting** to suspend automatic casting for that device and all its dashboards without deleting the configuration. For multiple dashboards, select **Save device settings** and submit. Existing and new devices default to enabled; the setting persists after Home Assistant restarts. Re-enable to resume normal scheduling, entity conditions and media protection. Disabling uses the normal no-eligible-dashboard stop logic on the next monitoring pass.
 - To add another dashboard, enable **“Add another dashboard after saving”**.
 - If a device has multiple dashboards, use **“Edit a different dashboard”** to switch which one you’re editing.
 
