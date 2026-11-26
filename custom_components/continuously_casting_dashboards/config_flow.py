@@ -510,6 +510,7 @@ class DeviceSubentryFlow(ConfigSubentryFlow):
         self._device_name: str = ""
         self._device_ip: str = ""
         self._device_alias: str = ""
+        self._casting_enabled: bool = True
 
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
@@ -569,6 +570,7 @@ class DeviceSubentryFlow(ConfigSubentryFlow):
                     self._device_name = device_name
                     self._device_ip = device_ip
                     self._device_alias = device_alias
+                    self._casting_enabled = user_input.get("casting_enabled", True)
                     self._dashboards = []
                     return await self.async_step_add_dashboard()
 
@@ -581,6 +583,7 @@ class DeviceSubentryFlow(ConfigSubentryFlow):
                 vol.Optional("device_name", default=""): cv.string,
                 vol.Optional("device_ip", default=""): cv.string,
                 vol.Optional("device_alias", default=""): cv.string,
+                vol.Optional("casting_enabled", default=True): cv.boolean,
             }
         )
 
@@ -764,6 +767,7 @@ class DeviceSubentryFlow(ConfigSubentryFlow):
                 "device_name": self._device_name,
                 "device_ip": self._device_ip,
                 "device_alias": self._device_alias,
+                "casting_enabled": self._casting_enabled,
                 "dashboards": cleaned_dashboards,
             },
         )
@@ -782,6 +786,7 @@ class DeviceSubentryFlow(ConfigSubentryFlow):
         self._device_name = subentry.data.get("device_name", "")
         self._device_ip = subentry.data.get("device_ip", "")
         self._device_alias = subentry.data.get("device_alias", "")
+        self._casting_enabled = subentry.data.get("casting_enabled", True)
         self._dashboards = copy.deepcopy(subentry.data.get("dashboards", []))
 
         # If device has exactly one dashboard, go directly to edit it
@@ -810,7 +815,10 @@ class DeviceSubentryFlow(ConfigSubentryFlow):
 
         if user_input is not None:
             action = user_input.get("dashboard_action")
+            self._casting_enabled = user_input.get("casting_enabled", self._casting_enabled)
 
+            if action == "save_device_settings":
+                return self._save_reconfigure()
             if action == "add_dashboard":
                 return await self.async_step_reconfigure_add_dashboard()
             elif action and action.startswith("edit:"):
@@ -829,7 +837,7 @@ class DeviceSubentryFlow(ConfigSubentryFlow):
                 return await self.async_step_reconfigure_select_dashboard()
 
         # Build options showing all dashboards
-        options = []
+        options = [{"label": "Save device settings", "value": "save_device_settings"}]
 
         for i, dashboard in enumerate(self._dashboards):
             url = dashboard.get("dashboard_url", "Unknown")
@@ -871,7 +879,8 @@ class DeviceSubentryFlow(ConfigSubentryFlow):
 
         schema = vol.Schema(
             {
-                vol.Required("dashboard_action"): selector.SelectSelector(
+                vol.Optional("casting_enabled", default=self._casting_enabled): cv.boolean,
+                vol.Required("dashboard_action", default="save_device_settings"): selector.SelectSelector(
                     selector.SelectSelectorConfig(
                         options=options,
                         mode=selector.SelectSelectorMode.LIST,
@@ -914,6 +923,8 @@ class DeviceSubentryFlow(ConfigSubentryFlow):
                 add_another = user_input.get("add_another_dashboard", False)
                 delete_this = user_input.get("delete_this_dashboard", False)
                 change_dashboard = user_input.get("change_dashboard", False)
+
+                self._casting_enabled = user_input.get("casting_enabled", self._casting_enabled)
 
                 if delete_this:
                     if len(self._dashboards) > 1 and self._current_dashboard_index is not None:
@@ -1077,6 +1088,7 @@ class DeviceSubentryFlow(ConfigSubentryFlow):
             vol.Optional(
                 "device_alias", default=self._device_alias
             ): cv.string,
+            vol.Optional("casting_enabled", default=self._casting_enabled): cv.boolean,
             vol.Required(
                 "dashboard_url", default=current.get("dashboard_url", "")
             ): cv.string,
@@ -1450,6 +1462,7 @@ class DeviceSubentryFlow(ConfigSubentryFlow):
                 "device_name": self._device_name,
                 "device_ip": self._device_ip,
                 "device_alias": self._device_alias,
+                "casting_enabled": self._casting_enabled,
                 "dashboards": cleaned_dashboards,
             },
         )

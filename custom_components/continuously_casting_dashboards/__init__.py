@@ -705,7 +705,12 @@ def _build_devices_from_subentries(entry: ConfigEntry) -> tuple[dict, dict]:
             "Found subentry device: key=%s name=%s ip=%s alias=%s dashboards=%d",
             device_key, device_name, device_ip, device_alias, len(dashboards)
         )
-        devices[device_key] = dashboards
+        # Keep saved dashboard definitions intact; apply the device-wide gate
+        # to runtime copies only, including every fallback dashboard.
+        devices[device_key] = (
+            dashboards if subentry.data.get("casting_enabled", True)
+            else [dict(dashboard, device_casting_enabled=False) for dashboard in dashboards]
+        )
         device_identifiers[device_key] = {
             "device_name": device_name,
             "device_ip": device_ip,

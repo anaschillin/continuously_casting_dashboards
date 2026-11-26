@@ -52,6 +52,19 @@ class PriorityAndRotationTests(unittest.TestCase):
         low = {"dashboard_url": "/low", "priority": 1}
         self.assertIs(self.select(mgr, [high, low]), low)
 
+    def test_disabled_device_blocks_all_dashboards_and_manual_override(self):
+        mgr, _ = self.selector()
+        dashboards = [
+            {"dashboard_url": "/a", "device_casting_enabled": False},
+            {"dashboard_url": "/b", "device_casting_enabled": False},
+        ]
+        mgr._manual_overrides["Kitchen"] = (1, 130)
+        self.assertIsNone(self.select(mgr, dashboards))
+        self.assertNotIn("Kitchen", mgr._manual_overrides)
+        for dashboard in dashboards:
+            dashboard["device_casting_enabled"] = True
+        self.assertIs(self.select(mgr, dashboards), dashboards[0])
+
     def test_no_rotation_without_explicit_interval(self):
         mgr, _ = self.selector()
         dashboards = [{"dashboard_url": "/a"}, {"dashboard_url": "/b"}]
