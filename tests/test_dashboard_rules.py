@@ -277,11 +277,15 @@ class PersistenceTests(unittest.TestCase):
         obj._get_entry = lambda: "entry"
         obj._get_reconfigure_subentry = lambda: "subentry"
         obj.async_update_and_abort = lambda *args, **kwargs: kwargs
-        saved = obj._save_reconfigure()
-        self.assertEqual(
-            saved["data"]["dashboards"][0]["start_time"], "06:45:00"
-        )
-        self.assertTrue(saved["data"]["dashboards"][0]["preserve_volume"])
+        for enabled in (True, False):
+            with self.subTest(casting_enabled=enabled):
+                obj._casting_enabled = enabled
+                saved = obj._save_reconfigure()
+                self.assertIs(saved["data"]["casting_enabled"], enabled)
+                self.assertEqual(
+                    saved["data"]["dashboards"][0]["start_time"], "06:45:00"
+                )
+                self.assertTrue(saved["data"]["dashboards"][0]["preserve_volume"])
 
 
 class VolumeTests(unittest.TestCase):
